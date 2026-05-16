@@ -26,15 +26,16 @@ export default function InitInput({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.replace(/\s/g, '')
 
-    // Если не цифры, то значение сбрасывается
+    // If not digits only, reset to 0
     if (!/^\d+$/.test(inputValue)) {
       onChange('0')
       return
     }
 
-    // Проверка на лишние нули
+    // Remove leading zeros, but keep a single zero if empty
     onChange(inputValue.replace(/^0+/, '') || '0')
   }
+
   useEffect(() => {
     if (mirrorRef.current) {
       setWidth(Math.max(72, mirrorRef.current.offsetWidth + 2))
@@ -55,6 +56,7 @@ export default function InitInput({
         </label>
       )}
       <div className="flex items-center gap-3">
+        {/* Hidden mirror span for measuring width */}
         <span
           ref={mirrorRef}
           className="absolute invisible whitespace-pre font-[Inter,sans-serif] text-lg px-3 min-w-[72px] min-h-[44px]"
