@@ -1,10 +1,10 @@
 import { useRef, useState, useEffect } from 'react'
 
 interface InitInputProps {
-  id: string
+  id?: string
   label?: string
-  value: number
-  onChange: (value: number) => void
+  value: string
+  onChange: (value: string) => void
   onFocusChange?: (focused: boolean) => void
   suffix?: string
 }
@@ -17,36 +17,29 @@ export default function InitInput({
   onFocusChange,
   suffix,
 }: InitInputProps) {
+  const formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  const mirrorRef = useRef<HTMLSpanElement>(null)
+  const [width, setWidth] = useState<number>(72)
   const [focused, setFocused] = useState(false)
   const [hovered, setHovered] = useState(false)
-  const [width, setWidth] = useState(72)
-  const mirrorRef = useRef<HTMLSpanElement>(null)
 
-  // Преобразует число в строку с пробелами каждые 3 цифры (например: 1234567 → "1 234 567")
-  // toLocaleString, чтобы корректно обрабатывать очень большие числа (e+21 и больше)
-  const toStringWithSpaces = (num: number) => {
-    if (isNaN(num) || !isFinite(num)) return '0'
-    return num.toLocaleString('en-US', {
-      maximumFractionDigits: 0,
-      useGrouping: true,
-    }).replace(/,/g, ' ')
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value.replace(/\s/g, '')
+
+    // Если не цифры, то значение сбрасывается
+    if (!/^\d+$/.test(inputValue)) {
+      onChange('0')
+      return
+    }
+
+    // Проверка на лишние нули
+    onChange(inputValue.replace(/^0+/, '') || '0')
   }
-
-  // Преобразует строку с пробелами обратно в число
-  // Если строка содержит не только цифры и пробелы, возвращает 0
-  const toNumber = (str: string) => {
-    const withoutSpaces = str.replace(/\s/g, '')
-    const num = Number(withoutSpaces)
-    return isNaN(num) || !isFinite(num) ? 0 : num
-  }
-
-  const displayValue = toStringWithSpaces(value)
-
   useEffect(() => {
     if (mirrorRef.current) {
       setWidth(Math.max(72, mirrorRef.current.offsetWidth + 2))
     }
-  }, [displayValue])
+  }, [formatted])
 
   const borderClass = focused
     ? 'border-[#906FEE]'
@@ -57,7 +50,7 @@ export default function InitInput({
   return (
     <div>
       {label && (
-        <label aria-label={label || `Input for ${id}`} htmlFor={id} className="block mb-3 text-gray-700 font-[Koulen,sans-serif] text-base">
+        <label htmlFor={id} className="block mb-3 text-gray-700 font-[Koulen,sans-serif] text-base">
           {label}
         </label>
       )}
@@ -67,12 +60,12 @@ export default function InitInput({
           className="absolute invisible whitespace-pre font-[Inter,sans-serif] text-lg px-3 min-w-[72px] min-h-[44px]"
           aria-hidden
         >
-          {displayValue || '0'}
+          {formatted || '0'}
         </span>
         <input
           id={id}
           type="text"
-          value={displayValue}
+          value={formatted}
           onFocus={() => {
             setFocused(true)
             onFocusChange?.(true)
@@ -83,14 +76,12 @@ export default function InitInput({
           }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
-          onChange={(e) => {
-            onChange(toNumber(e.target.value))
-          }}
+          onChange={handleInputChange}
           className={`border rounded outline-none font-[Inter,sans-serif] text-lg px-3 min-w-[72px] min-h-[44px] ${borderClass} ${focused ? 'text-gray-900' : 'text-[#CFCADF]'}`}
           style={{ width }}
           placeholder="0"
         />
-        {suffix && <span id={`${id}-suffix`} className="text-gray-600 font-[Inter,sans-serif] text-lg">{suffix}</span>}
+        {suffix && <span className="text-gray-600 font-[Inter,sans-serif] text-lg">{suffix}</span>}
       </div>
     </div>
   )

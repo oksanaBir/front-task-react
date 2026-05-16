@@ -6,7 +6,7 @@ export default function PeopleList() {
 
   const peopleWithYears = people.map((person) => ({
     ...person,
-    ageInYears: Math.floor(person.ageInHours / 8760),
+    ageInYears: (BigInt(person.ageInHours) / 8760n).toString(),
   }))
 
   return (

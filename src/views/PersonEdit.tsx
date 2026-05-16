@@ -35,7 +35,7 @@ export default function PersonEdit() {
         <InitInput
           id="hours-input"
           label={`${person.name.toUpperCase()} IS`}
-          value={person.ageInHours}  // теперь number
+          value={person.ageInHours}
           onChange={(value) => updatePersonAge(person.id, value)}
           onFocusChange={setInputFocused}
           suffix="hours old"
